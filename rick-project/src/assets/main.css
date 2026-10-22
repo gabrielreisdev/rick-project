@@ -1,0 +1,506 @@
+/* ============================================================
+   Portal Explorer — Tailwind CSS v4 + Design System Setup
+   (Tailwind para utilitários/layout; CSS puro para animações)
+   ============================================================ */
+@import "tailwindcss";
+@import "./animations.css";
+
+/* ------------------------------------------------------------
+   Tailwind CSS v4 Theme configuration
+   ------------------------------------------------------------ */
+@theme {
+  --color-portal: #97ce4c;
+  --color-portal-glow: #b8ff5c;
+  --color-portal-deep: #3f7d1e;
+  --color-cyan: #3ee0f0;
+  --color-local: #d77bff;
+  --color-local-bg: rgba(215, 123, 255, 0.12);
+  --color-local-border: rgba(215, 123, 255, 0.45);
+  --color-remote: #3ee0f0;
+  --color-remote-bg: rgba(62, 224, 240, 0.1);
+  --color-remote-border: rgba(62, 224, 240, 0.35);
+  --color-alive: #6ee26b;
+  --color-dead: #ff5d73;
+  --color-unknown: #9aa5b1;
+  --color-amber: #ffc857;
+
+  --color-bg-base: #05080d;
+  --color-bg-subtle: #0a1119;
+  --color-surface: rgba(15, 23, 33, 0.72);
+  --color-surface-hover: rgba(24, 35, 48, 0.78);
+  --color-surface-solid: #0e1620;
+
+  --color-text-main: #e8f1ea;
+  --color-text-dim: #9aaba7;
+  --color-text-mute: #5f706c;
+
+  --color-border-portal: rgba(151, 206, 76, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.07);
+  --color-border-strong: rgba(151, 206, 76, 0.32);
+
+  --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Righteous', 'Space Grotesk', system-ui, sans-serif;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+}
+
+/* ------------------------------------------------------------
+   CSS Custom Properties (Retrocompatibilidade e tokens dinâmicos)
+   ------------------------------------------------------------ */
+:root {
+  --bg: #05080d;
+  --bg-2: #0a1119;
+  --surface: rgba(15, 23, 33, 0.72);
+  --surface-2: rgba(24, 35, 48, 0.78);
+  --surface-solid: #0e1620;
+  --border: rgba(151, 206, 76, 0.1);
+  --border-2: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(151, 206, 76, 0.32);
+
+  --text: #e8f1ea;
+  --text-dim: #9aaba7;
+  --text-mute: #5f706c;
+
+  --portal: #97ce4c;
+  --portal-glow: #b8ff5c;
+  --portal-deep: #3f7d1e;
+  --cyan: #3ee0f0;
+  --local: #d77bff;
+  --local-bg: rgba(215, 123, 255, 0.12);
+  --local-border: rgba(215, 123, 255, 0.45);
+  --remote: #3ee0f0;
+  --remote-bg: rgba(62, 224, 240, 0.1);
+  --remote-border: rgba(62, 224, 240, 0.35);
+  --alive: #6ee26b;
+  --dead: #ff5d73;
+  --unknown: #9aa5b1;
+  --amber: #ffc857;
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.75);
+  --shadow-glow: 0 0 0 1px var(--border-strong), 0 18px 50px -12px rgba(151, 206, 76, 0.25);
+
+  --font: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --display: 'Righteous', var(--font);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --sidebar-w: 248px;
+
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------
+   Base Styles & Starfield Canvas
+   ------------------------------------------------------------ */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background:
+    radial-gradient(1100px 700px at 85% -10%, rgba(151, 206, 76, 0.12), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(215, 123, 255, 0.1), transparent 60%),
+    radial-gradient(700px 500px at 50% 50%, rgba(62, 224, 240, 0.04), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Starfield decorativo com animação pura de drift */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 120px 80px, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 220px 150px, rgba(184, 255, 92, 0.8), transparent),
+    radial-gradient(1px 1px at 300px 40px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 380px 220px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 60px 260px, rgba(62, 224, 240, 0.7), transparent);
+  background-size: 420px 300px;
+  animation: drift 120s linear infinite;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0;
+}
+
+::selection {
+  background: rgba(151, 206, 76, 0.35);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(151, 206, 76, 0.18);
+  border-radius: 10px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--portal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ------------------------------------------------------------
+   UI Component Classes (Reutilizáveis com Tailwind)
+   ------------------------------------------------------------ */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(16px);
+  padding: 24px;
+}
+
+/* Botões */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform 0.2s var(--ease),
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    color 0.2s;
+}
+.btn:hover {
+  border-color: var(--border-strong);
+  background: rgba(151, 206, 76, 0.08);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--portal-glow), var(--portal));
+  color: #0b1404;
+  border-color: transparent;
+  box-shadow: 0 8px 28px -8px rgba(151, 206, 76, 0.7);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #cbff85, var(--portal-glow));
+  box-shadow: 0 10px 36px -6px rgba(151, 206, 76, 0.85);
+}
+.btn-local {
+  background: var(--local-bg);
+  border-color: var(--local-border);
+  color: var(--local);
+}
+.btn-local:hover {
+  background: rgba(215, 123, 255, 0.2);
+  border-color: var(--local);
+}
+.btn-danger:hover {
+  border-color: rgba(255, 93, 115, 0.5);
+  background: rgba(255, 93, 115, 0.1);
+  color: var(--dead);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-2);
+}
+.btn-icon {
+  width: 40px;
+  padding: 0;
+}
+.btn-sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+.btn-sm.btn-icon {
+  width: 32px;
+}
+
+/* Campos de entrada */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-2);
+  background: rgba(5, 8, 13, 0.6);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+}
+.textarea {
+  height: auto;
+  min-height: 96px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.select {
+  appearance: none;
+  padding-right: 36px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-dim) 50%),
+    linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 18px,
+    calc(100% - 13px) 18px;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.select option {
+  background: var(--surface-solid);
+}
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--portal);
+  box-shadow: 0 0 0 4px rgba(151, 206, 76, 0.15);
+  background: rgba(5, 8, 13, 0.85);
+}
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-mute);
+}
+
+/* Chips & Badges */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-2);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.chip:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.chip.active {
+  color: #0b1404;
+  background: var(--portal);
+  border-color: var(--portal);
+  box-shadow: 0 6px 20px -6px rgba(151, 206, 76, 0.7);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-2);
+  color: var(--text-dim);
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.field-local {
+  color: var(--local);
+  text-shadow: 0 0 18px rgba(215, 123, 255, 0.45);
+}
+
+/* Layout helpers */
+.container {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 32px clamp(16px, 3vw, 40px) 80px;
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 20px;
+}
+
+.section {
+  margin-top: 48px;
+}
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-sub {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--portal);
+}
+
+.text-dim {
+  color: var(--text-dim);
+}
+.text-mute {
+  color: var(--text-mute);
+}
+
+/* Card base — layout & visual em harmonia com Tailwind; animação de entrada pura */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition:
+    transform 0.35s var(--ease),
+    border-color 0.35s,
+    box-shadow 0.35s;
+  animation: card-in 0.5s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-glow);
+}
+.card.is-local {
+  border-color: rgba(215, 123, 255, 0.28);
+}
+.card.is-local:hover {
+  border-color: var(--local-border);
+  box-shadow:
+    0 0 0 1px var(--local-border),
+    0 18px 50px -12px rgba(215, 123, 255, 0.3);
+}
+
+/* Skeleton com animação shimmer pura */
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.03) 30%,
+    rgba(151, 206, 76, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 70%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 10px;
+}
+
+kbd {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border-2);
+  border-bottom-width: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+}
