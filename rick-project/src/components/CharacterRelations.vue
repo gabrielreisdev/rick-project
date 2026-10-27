@@ -17,14 +17,22 @@ const allEpisodes = ref([])
 const loading = ref(true)
 
 watch(
-  () => props.character.id,
-  async () => {
+  () => props.character?.id,
+  async (newId) => {
+    if (!newId) return
     loading.value = true
-    const ids = [idFromUrl(props.character.origin?.url), idFromUrl(props.character.location?.url)]
+    const ids = [idFromUrl(props.character.origin?.url), idFromUrl(props.character.location?.url)].filter(Boolean)
     try {
-      const [locs, eps] = await Promise.all([fetchMany('location', ids), fetchAll('episode')])
-      places.value = locs
-      allEpisodes.value = eps
+      const [locs, eps] = await Promise.all([
+        ids.length ? fetchMany('location', ids) : Promise.resolve([]),
+        fetchAll('episode').catch(() => []),
+      ])
+      places.value = locs ?? []
+      allEpisodes.value = eps ?? []
+    } catch (err) {
+      console.warn('Erro ao carregar relações do personagem:', err)
+      places.value = []
+      allEpisodes.value = []
     } finally {
       loading.value = false
     }

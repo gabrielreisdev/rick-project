@@ -15,6 +15,30 @@ export default defineConfig({
       '/rm-api': {
         target: 'https://rickandmortyapi.com/api',
         changeOrigin: true,
+        secure: false,
+        headers: {
+          Connection: 'close',
+          Accept: 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
+        rewrite: (path) => {
+          const stripped = path.replace(/^\/rm-api/, '')
+          return stripped.replace(/^\/places/, '/location')
+        },
+      },
+    },
+  },
+  preview: {
+    proxy: {
+      '/rm-api': {
+        target: 'https://rickandmortyapi.com/api',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          Connection: 'close',
+          Accept: 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
         rewrite: (path) => {
           const stripped = path.replace(/^\/rm-api/, '')
           return stripped.replace(/^\/places/, '/location')

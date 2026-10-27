@@ -23,20 +23,16 @@ const episodes = ref([])
 async function loadData(silent = false) {
   if (!silent) loading.value = true
   try {
-    const { character, location, episode } = favorites.byResource
-    const results = await Promise.allSettled([
-      character?.length ? fetchMany('character', character) : Promise.resolve([]),
-      location?.length ? fetchMany('location', location) : Promise.resolve([]),
-      episode?.length ? fetchMany('episode', episode) : Promise.resolve([]),
+    const { character = [], location = [], episode = [] } = favorites.byResource || {}
+    const [cData, lData, eData] = await Promise.all([
+      character.length ? fetchMany('character', character) : Promise.resolve([]),
+      location.length ? fetchMany('location', location) : Promise.resolve([]),
+      episode.length ? fetchMany('episode', episode) : Promise.resolve([]),
     ])
 
-    const cData = results[0].status === 'fulfilled' ? results[0].value : []
-    const lData = results[1].status === 'fulfilled' ? results[1].value : []
-    const eData = results[2].status === 'fulfilled' ? results[2].value : []
-
-    characters.value = cData.filter(Boolean).map((item) => edits.apply('character', item))
-    locations.value = lData.filter(Boolean).map((item) => edits.apply('location', item))
-    episodes.value = eData.filter(Boolean).map((item) => edits.apply('episode', item))
+    characters.value = (cData || []).filter(Boolean).map((item) => edits.apply('character', item))
+    locations.value = (lData || []).filter(Boolean).map((item) => edits.apply('location', item))
+    episodes.value = (eData || []).filter(Boolean).map((item) => edits.apply('episode', item))
   } catch (err) {
     console.error('Falha ao carregar favoritos:', err)
   } finally {
@@ -45,7 +41,7 @@ async function loadData(silent = false) {
 }
 
 watch(
-  () => favorites.items.length,
+  () => (Array.isArray(favorites.items) ? favorites.items.join(',') : ''),
   () => {
     loadData(true)
   },

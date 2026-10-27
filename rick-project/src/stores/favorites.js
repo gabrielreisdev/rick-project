@@ -7,11 +7,17 @@ function normalizeItems(raw) {
   if (Array.isArray(raw)) {
     const list = []
     for (const item of raw) {
-      if (typeof item === 'string' && item.includes(':')) {
-        list.push(item)
-      } else if (item && typeof item === 'object' && item.resource && item.id) {
-        list.push(`${item.resource}:${item.id}`)
-      } else if (typeof item === 'number') {
+      if (typeof item === 'string') {
+        if (item.includes(':')) {
+          list.push(item)
+        } else if (!isNaN(Number(item)) && Number(item) > 0) {
+          list.push(`character:${Number(item)}`)
+        }
+      } else if (item && typeof item === 'object') {
+        const res = item.resource || 'character'
+        const id = item.id
+        if (id) list.push(`${res}:${id}`)
+      } else if (typeof item === 'number' && Number.isFinite(item) && item > 0) {
         list.push(`character:${item}`)
       }
     }
@@ -22,9 +28,9 @@ function normalizeItems(raw) {
     const charList = raw.characters ?? raw.character ?? []
     const locList = raw.locations ?? raw.location ?? []
     const epList = raw.episodes ?? raw.episode ?? []
-    if (Array.isArray(charList)) for (const id of charList) list.push(`character:${id}`)
-    if (Array.isArray(locList)) for (const id of locList) list.push(`location:${id}`)
-    if (Array.isArray(epList)) for (const id of epList) list.push(`episode:${id}`)
+    if (Array.isArray(charList)) for (const id of charList) if (id) list.push(`character:${id}`)
+    if (Array.isArray(locList)) for (const id of locList) if (id) list.push(`location:${id}`)
+    if (Array.isArray(epList)) for (const id of epList) if (id) list.push(`episode:${id}`)
     return [...new Set(list)]
   }
   return []
@@ -33,9 +39,7 @@ function normalizeItems(raw) {
 export const useFavoritesStore = defineStore('favorites', () => {
   const items = usePersistedRef('rm-explorer:favorites:v1', [])
 
-  if (!Array.isArray(items.value)) {
-    items.value = normalizeItems(items.value)
-  }
+  items.value = normalizeItems(items.value)
 
   const count = computed(() => {
     return Array.isArray(items.value) ? items.value.length : 0
@@ -43,13 +47,15 @@ export const useFavoritesStore = defineStore('favorites', () => {
 
   const byResource = computed(() => {
     const out = { character: [], location: [], episode: [] }
-    const list = Array.isArray(items.value) ? items.value : normalizeItems(items.value)
+    const list = Array.isArray(items.value) ? items.value : []
     for (const key of list) {
       if (typeof key !== 'string') continue
       const [resource, id] = key.split(':')
       if (out[resource]) {
         const numId = Number(id)
-        if (!isNaN(numId) && numId > 0) out[resource].push(numId)
+        if (Number.isFinite(numId) && numId > 0 && !out[resource].includes(numId)) {
+          out[resource].push(numId)
+        }
       }
     }
     return out

@@ -21,11 +21,15 @@ const filter = ref('')
 const limit = ref(24)
 
 watch(
-  () => props.urls.join(),
+  () => (Array.isArray(props.urls) ? props.urls.join(',') : ''),
   async () => {
     loading.value = true
     try {
-      raw.value = await fetchMany('character', props.urls.map(idFromUrl))
+      const ids = Array.isArray(props.urls) ? props.urls.map(idFromUrl).filter(Boolean) : []
+      raw.value = ids.length ? await fetchMany('character', ids) : []
+    } catch (err) {
+      console.warn('Erro ao carregar elenco:', err)
+      raw.value = []
     } finally {
       loading.value = false
     }

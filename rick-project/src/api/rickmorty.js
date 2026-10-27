@@ -1,16 +1,30 @@
 const REMOTE_BASE = 'https://rickandmortyapi.com/api'
 const cache = new Map()
+const allCache = new Map()
 
-async function fetchWithRetry(url, options = {}, retries = 2) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    })
+    return res
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+async function fetchWithRetry(url, options = {}, retries = 1, timeoutMs = 8000) {
   let lastError
   for (let i = 0; i <= retries; i++) {
     try {
-      const res = await fetch(url, options)
-      return res
+      return await fetchWithTimeout(url, options, timeoutMs)
     } catch (err) {
       lastError = err
       if (i < retries) {
-        await new Promise((resolve) => setTimeout(resolve, 250 * (i + 1)))
+        await new Promise((resolve) => setTimeout(resolve, 200 * (i + 1)))
       }
     }
   }
@@ -23,6 +37,8 @@ async function request(path) {
   const promise = (async () => {
     const isLocation = path.startsWith('/location')
     const proxyPath = isLocation ? path.replace(/^\/location/, '/places') : path
+
+    // In browser, try proxy first (to bypass ad-blockers for location) then direct remote
     const candidateUrls = [
       `/rm-api${proxyPath}`,
       `${REMOTE_BASE}${path}`,
@@ -32,16 +48,22 @@ async function request(path) {
 
     for (const url of candidateUrls) {
       try {
-        const res = await fetchWithRetry(url, {}, 1)
+        const res = await fetchWithRetry(url, {}, 1, 8000)
         const contentType = res.headers.get('content-type') || ''
         const isJson = contentType.includes('application/json')
+
+        // 404 from Rick and Morty API means no matches/not found
         if (res.status === 404 && isJson) return null
+
         if (res.ok) {
           try {
             return await res.json()
-          } catch {
+          } catch (jsonErr) {
+            lastError = jsonErr
             continue
           }
+        } else {
+          lastError = new Error(`HTTP ${res.status}: ${res.statusText}`)
         }
       } catch (err) {
         lastError = err
@@ -63,35 +85,71 @@ export async function fetchPage(resource, page = 1, filters = {}) {
   for (const [key, value] of Object.entries(filters)) {
     if (value !== undefined && value !== null && value !== '') params.set(key, value)
   }
-  const data = await request(`/${resource}?${params}`)
-  return data ?? EMPTY_PAGE
+  try {
+    const data = await request(`/${resource}?${params}`)
+    return data ?? EMPTY_PAGE
+  } catch (err) {
+    console.warn(`fetchPage(${resource}, ${page}) falhou:`, err)
+    return EMPTY_PAGE
+  }
 }
 
-export function fetchOne(resource, id) {
-  return request(`/${resource}/${id}`)
+export async function fetchOne(resource, id) {
+  const numId = Number(id)
+  if (!Number.isFinite(numId) || numId <= 0) return null
+  const data = await request(`/${resource}/${numId}`)
+  if (!data || data.error) return null
+  return data
 }
 
 export async function fetchMany(resource, ids) {
-  const unique = [...new Set(ids.filter(Boolean))]
+  if (!Array.isArray(ids)) return []
+  const unique = [...new Set(ids.map(Number).filter((n) => Number.isFinite(n) && n > 0))]
   if (!unique.length) return []
-  const data = await request(`/${resource}/${unique.join(',')}`)
-  if (!data) return []
-  return Array.isArray(data) ? data : [data]
+  try {
+    const data = await request(`/${resource}/${unique.join(',')}`)
+    if (!data || data.error) return []
+    const list = Array.isArray(data) ? data : [data]
+    return list.filter((item) => item && typeof item === 'object' && item.id)
+  } catch (err) {
+    console.warn(`fetchMany(${resource}) falhou:`, err)
+    return []
+  }
 }
 
 export async function fetchAll(resource, filters = {}) {
-  const first = await fetchPage(resource, 1, filters)
-  const rest = await Promise.all(
-    Array.from({ length: Math.max(0, first.info.pages - 1) }, (_, i) =>
-      fetchPage(resource, i + 2, filters),
-    ),
-  )
-  return [first, ...rest].flatMap((p) => p.results)
+  const cacheKey = `${resource}:${JSON.stringify(filters)}`
+  if (allCache.has(cacheKey)) return allCache.get(cacheKey)
+
+  const promise = (async () => {
+    try {
+      const first = await fetchPage(resource, 1, filters)
+      const totalPages = Math.max(0, Number(first?.info?.pages) || 0)
+      if (totalPages <= 1) return first.results ?? []
+
+      const rest = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, i) =>
+          fetchPage(resource, i + 2, filters),
+        ),
+      )
+      return [first, ...rest].flatMap((p) => p.results ?? [])
+    } catch (err) {
+      allCache.delete(cacheKey)
+      throw err
+    }
+  })()
+
+  allCache.set(cacheKey, promise)
+  return promise
 }
 
 export async function fetchCount(resource) {
-  const { info } = await fetchPage(resource, 1)
-  return info.count
+  try {
+    const { info } = await fetchPage(resource, 1)
+    return info?.count ?? 0
+  } catch {
+    return 0
+  }
 }
 
 export function idFromUrl(url) {
