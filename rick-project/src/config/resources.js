@@ -118,6 +118,7 @@ export const RESOURCES = {
     icon: 'globe',
     tagline: 'Planetas, microversos, estações espaciais e dimensões inteiras.',
     editable: false,
+    fields: [],
     filters: [
       { key: 'name', label: 'Buscar por nome', type: 'search' },
       { key: 'type', label: 'Tipo', type: 'text', placeholder: 'Planeta, Aglomerado…' },
@@ -132,6 +133,7 @@ export const RESOURCES = {
     icon: 'tv',
     tagline: 'Todas as aventuras, temporada por temporada.',
     editable: false,
+    fields: [],
     filters: [
       { key: 'name', label: 'Buscar por título', type: 'search' },
       { key: 'episode', label: 'Temporada', type: 'chips', options: SEASONS },

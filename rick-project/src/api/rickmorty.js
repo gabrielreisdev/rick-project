@@ -1,18 +1,57 @@
-const BASE = 'https://rickandmortyapi.com/api'
+const REMOTE_BASE = 'https://rickandmortyapi.com/api'
 const cache = new Map()
+
+async function fetchWithRetry(url, options = {}, retries = 2) {
+  let lastError
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, options)
+      return res
+    } catch (err) {
+      lastError = err
+      if (i < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 250 * (i + 1)))
+      }
+    }
+  }
+  throw lastError
+}
 
 async function request(path) {
   if (cache.has(path)) return cache.get(path)
-  const promise = fetch(BASE + path)
-    .then(async (res) => {
-      if (res.status === 404) return null
-      if (!res.ok) throw new Error(`Falha na API (HTTP ${res.status})`)
-      return res.json()
-    })
-    .catch((err) => {
-      cache.delete(path)
-      throw err
-    })
+
+  const promise = (async () => {
+    const isLocation = path.startsWith('/location')
+    const proxyPath = isLocation ? path.replace(/^\/location/, '/places') : path
+    const candidateUrls = [
+      `/rm-api${proxyPath}`,
+      `${REMOTE_BASE}${path}`,
+    ]
+
+    let lastError = null
+
+    for (const url of candidateUrls) {
+      try {
+        const res = await fetchWithRetry(url, {}, 1)
+        const contentType = res.headers.get('content-type') || ''
+        const isJson = contentType.includes('application/json')
+        if (res.status === 404 && isJson) return null
+        if (res.ok) {
+          try {
+            return await res.json()
+          } catch {
+            continue
+          }
+        }
+      } catch (err) {
+        lastError = err
+      }
+    }
+
+    cache.delete(path)
+    throw lastError || new Error('Falha na API')
+  })()
+
   cache.set(path, promise)
   return promise
 }
@@ -62,5 +101,5 @@ export function idFromUrl(url) {
 }
 
 export function characterAvatar(id) {
-  return `${BASE}/character/avatar/${id}.jpeg`
+  return `${REMOTE_BASE}/character/avatar/${id}.jpeg`
 }
