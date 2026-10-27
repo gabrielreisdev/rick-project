@@ -1,8 +1,8 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import AppSidebar from '@/components/layout/AppSidebar.vue'
-import ToastHost from '@/components/layout/ToastHost.vue'
-import CommandPalette from '@/components/layout/CommandPalette.vue'
+import AppSidebar from '@/components/AppSidebar.vue'
+import ToastHost from '@/components/ToastHost.vue'
+import CommandPalette from '@/components/CommandPalette.vue'
 
 const searchOpen = ref(false)
 

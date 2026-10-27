@@ -17,7 +17,6 @@ const kind = computed(() => (['Alive', 'Dead'].includes(props.status) ? props.st
 </template>
 
 <style scoped>
-/* CSS puro dedicado para o brilho e animação de pulsação */
 .alive {
   --c: var(--alive);
 }

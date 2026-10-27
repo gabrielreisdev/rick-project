@@ -1,11 +1,11 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import EmptyState from '@/components/ui/EmptyState.vue'
-import SkeletonGrid from '@/components/ui/SkeletonGrid.vue'
-import CharacterCard from '@/components/cards/CharacterCard.vue'
-import LocationCard from '@/components/cards/LocationCard.vue'
-import EpisodeCard from '@/components/cards/EpisodeCard.vue'
+import AppIcon from '@/components/AppIcon.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import SkeletonGrid from '@/components/SkeletonGrid.vue'
+import CharacterCard from '@/components/CharacterCard.vue'
+import LocationCard from '@/components/LocationCard.vue'
+import EpisodeCard from '@/components/EpisodeCard.vue'
 import { fetchMany } from '@/api/rickmorty'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useEditsStore } from '@/stores/edits'
@@ -20,32 +20,35 @@ const characters = ref([])
 const locations = ref([])
 const episodes = ref([])
 
-async function loadData() {
-  loading.value = true
+async function loadData(silent = false) {
+  if (!silent) loading.value = true
   try {
     const { character, location, episode } = favorites.byResource
-    const [cData, lData, eData] = await Promise.all([
-      character.length ? fetchMany('character', character) : Promise.resolve([]),
-      location.length ? fetchMany('location', location) : Promise.resolve([]),
-      episode.length ? fetchMany('episode', episode) : Promise.resolve([]),
+    const results = await Promise.allSettled([
+      character?.length ? fetchMany('character', character) : Promise.resolve([]),
+      location?.length ? fetchMany('location', location) : Promise.resolve([]),
+      episode?.length ? fetchMany('episode', episode) : Promise.resolve([]),
     ])
 
-    characters.value = cData.map((item) => edits.apply('character', item))
-    locations.value = lData.map((item) => edits.apply('location', item))
-    episodes.value = eData.map((item) => edits.apply('episode', item))
+    const cData = results[0].status === 'fulfilled' ? results[0].value : []
+    const lData = results[1].status === 'fulfilled' ? results[1].value : []
+    const eData = results[2].status === 'fulfilled' ? results[2].value : []
+
+    characters.value = cData.filter(Boolean).map((item) => edits.apply('character', item))
+    locations.value = lData.filter(Boolean).map((item) => edits.apply('location', item))
+    episodes.value = eData.filter(Boolean).map((item) => edits.apply('episode', item))
   } catch (err) {
     console.error('Falha ao carregar favoritos:', err)
   } finally {
-    loading.value = false
+    if (!silent) loading.value = false
   }
 }
 
 watch(
   () => favorites.items.length,
   () => {
-    loadData()
+    loadData(true)
   },
-  { deep: true },
 )
 
 onMounted(() => {
@@ -58,6 +61,13 @@ const tabs = computed(() => [
   { key: 'location', label: 'Locais', count: favorites.byResource.location.length },
   { key: 'episode', label: 'Episódios', count: favorites.byResource.episode.length },
 ])
+
+const emptyTabInfo = computed(() => {
+  if (currentTab.value === 'character') return { label: 'Personagens', link: '/characters' }
+  if (currentTab.value === 'location') return { label: 'Locais', link: '/locations' }
+  if (currentTab.value === 'episode') return { label: 'Episódios', link: '/episodes' }
+  return null
+})
 </script>
 
 <template>
@@ -102,8 +112,19 @@ const tabs = computed(() => [
       </EmptyState>
     </div>
 
+    <div v-else-if="emptyTabInfo && tabs.find((t) => t.key === currentTab)?.count === 0" class="empty-wrap">
+      <EmptyState
+        icon="💔"
+        :title="`Nenhum ${emptyTabInfo.label.toLowerCase()} favorito`"
+        :message="`Você ainda não adicionou nenhum ${emptyTabInfo.label.toLowerCase()} aos favoritos. Explore a lista e clique no coração para adicionar.`"
+      >
+        <RouterLink :to="emptyTabInfo.link" class="btn btn-primary">
+          <AppIcon name="search" :size="16" /> Explorar {{ emptyTabInfo.label }}
+        </RouterLink>
+      </EmptyState>
+    </div>
+
     <div v-else class="fav-content">
-      <!-- Characters -->
       <section v-if="(currentTab === 'all' || currentTab === 'character') && characters.length" class="section">
         <div class="section-head">
           <h2 class="section-title">
@@ -120,7 +141,6 @@ const tabs = computed(() => [
         </div>
       </section>
 
-      <!-- Locations -->
       <section v-if="(currentTab === 'all' || currentTab === 'location') && locations.length" class="section">
         <div class="section-head">
           <h2 class="section-title">
@@ -137,7 +157,6 @@ const tabs = computed(() => [
         </div>
       </section>
 
-      <!-- Episodes -->
       <section v-if="(currentTab === 'all' || currentTab === 'episode') && episodes.length" class="section">
         <div class="section-head">
           <h2 class="section-title">

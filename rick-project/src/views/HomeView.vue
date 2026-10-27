@@ -1,20 +1,20 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import SafeImage from '@/components/ui/SafeImage.vue'
-import SourceBadge from '@/components/ui/SourceBadge.vue'
-import CharacterCard from '@/components/cards/CharacterCard.vue'
-import SkeletonGrid from '@/components/ui/SkeletonGrid.vue'
+import AppIcon from '@/components/AppIcon.vue'
+import SafeImage from '@/components/SafeImage.vue'
+import SourceBadge from '@/components/SourceBadge.vue'
+import CharacterCard from '@/components/CharacterCard.vue'
+import SkeletonGrid from '@/components/SkeletonGrid.vue'
 import { fetchAll, fetchCount, fetchMany, fetchOne } from '@/api/rickmorty'
-import { RESOURCES, SEASON_COLORS, parseEpisodeCode, t } from '@/config/resources'
+import { SEASON_COLORS, parseEpisodeCode, t } from '@/config/resources'
 import { useEditsStore } from '@/stores/edits'
-// import { useFavoritesStore } from '@/stores/favorites'
-import { formatDate, formatNumber, timeAgo } from '@/utils/format'
+import { useFavoritesStore } from '@/stores/favorites'
+import { formatDate, formatNumber } from '@/utils/format'
 
 const router = useRouter()
 const edits = useEditsStore()
-// const favorites = useFavoritesStore()
+const favorites = useFavoritesStore()
 
 const counts = ref({ character: null, location: null, episode: null })
 const featuredRaw = ref(null)
@@ -43,7 +43,7 @@ async function loadEncounters() {
   if (!counts.value.character) return
   encountersLoading.value = true
   const ids = new Set()
-  while (ids.size < 8) ids.add(randomId(counts.value.character))
+  while (ids.size < 10) ids.add(randomId(counts.value.character))
   encountersRaw.value = await fetchMany('character', [...ids])
   encountersLoading.value = false
 }
@@ -84,19 +84,13 @@ const stats = computed(() => [
   { label: 'Personagens', value: counts.value.character, icon: 'users', to: '/characters' },
   { label: 'Locais', value: counts.value.location, icon: 'globe', to: '/locations' },
   { label: 'Episódios', value: counts.value.episode, icon: 'tv', to: '/episodes' },
-  // Temporariamente comentados:
-  // { label: 'Edições locais', value: edits.count, icon: 'database', to: '/lab', local: true },
-  // { label: 'Favoritos', value: favorites.count, icon: 'heart', to: '/favorites', fav: true },
+  { label: 'Editados', value: edits.count, icon: 'database', to: '/characters?edited=true', local: true },
+  { label: 'Favoritos', value: favorites.count, icon: 'heart', to: '/favorites', fav: true },
 ])
-
-const recent = computed(() => edits.activity.slice(0, 6))
-const ACTIVITY_LABEL = { edit: 'editou', revert: 'restaurou', clear: 'limpou', import: 'importou' }
-const activityLink = (a) => (a.resource ? `/${RESOURCES[a.resource].route}/${a.id}` : '/')
 </script>
 
 <template>
   <div class="container">
-    <!-- HERO -->
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow">Wubba lubba dub dub · Dimensão C-137</p>
@@ -159,7 +153,6 @@ const activityLink = (a) => (a.resource ? `/${RESOURCES[a.resource].route}/${a.i
       </div>
     </section>
 
-    <!-- STATS -->
     <section class="stats">
       <RouterLink
         v-for="s in stats"
@@ -174,24 +167,22 @@ const activityLink = (a) => (a.resource ? `/${RESOURCES[a.resource].route}/${a.i
       </RouterLink>
     </section>
 
-    <!-- ENCOUNTERS -->
     <section class="section">
       <div class="section-head">
         <div>
           <h2 class="section-title"><AppIcon name="orbit" :size="20" /> Encontros interdimensionais</h2>
-          <p class="section-sub">8 personagens sorteados de {{ formatNumber(counts.character) }} possibilidades.</p>
+          <p class="section-sub">10 personagens sorteados de {{ formatNumber(counts.character) }} possibilidades.</p>
         </div>
         <button id="reroll" class="btn" :disabled="encountersLoading" @click="loadEncounters">
           <AppIcon name="shuffle" :size="15" /> Sortear de novo
         </button>
       </div>
-      <SkeletonGrid v-if="encountersLoading" :count="8" />
+      <SkeletonGrid v-if="encountersLoading" :count="10" />
       <div v-else class="grid-cards">
         <CharacterCard v-for="(c, i) in encounters" :key="c.id" :item="c" :index="i" />
       </div>
     </section>
 
-    <!-- SEASONS -->
     <section class="section">
       <div class="section-head">
         <div>
@@ -221,30 +212,6 @@ const activityLink = (a) => (a.resource ? `/${RESOURCES[a.resource].route}/${a.i
           <div v-for="n in 5" :key="n" class="skeleton season-sk" />
         </template>
       </div>
-    </section>
-
-    <!-- ACTIVITY -->
-    <section v-if="recent.length" class="section">
-      <div class="section-head">
-        <div>
-          <h2 class="section-title"><AppIcon name="flask" :size="20" /> Atividade recente</h2>
-          <p class="section-sub">Suas últimas alterações locais.</p>
-        </div>
-        <!-- <RouterLink to="/lab" class="btn btn-sm">Abrir laboratório <AppIcon name="arrow-right" :size="14" /></RouterLink> -->
-      </div>
-      <ul class="activity">
-        <li v-for="(a, i) in recent" :key="i">
-          <RouterLink :to="activityLink(a)" class="act-row">
-            <span class="act-dot" :class="a.type" />
-            <span>
-              Você <strong>{{ ACTIVITY_LABEL[a.type] }}&nbsp;</strong>
-              <template v-if="a.fields?.length">{{ a.fields.length }} campo(s) de&nbsp;</template>
-              <em>{{ a.name }}</em>
-            </span>
-            <span class="text-mute when">{{ timeAgo(a.at) }}</span>
-          </RouterLink>
-        </li>
-      </ul>
     </section>
   </div>
 </template>
@@ -290,7 +257,6 @@ h1 {
   font-size: 15px;
 }
 
-/* portal */
 .portal-wrap {
   position: relative;
   display: flex;
@@ -386,7 +352,6 @@ h1 {
   font-family: var(--mono);
 }
 
-/* stats */
 .stats {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -447,7 +412,6 @@ h1 {
   color: var(--text-dim);
 }
 
-/* seasons */
 .seasons {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -495,55 +459,6 @@ h1 {
 .season-sk {
   height: 110px;
   border-radius: 20px;
-}
-
-/* activity */
-.activity {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-.act-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--border-2);
-  background: var(--surface);
-  font-size: 14px;
-  color: var(--text-dim);
-  transition: border-color 0.2s;
-}
-.act-row:hover {
-  border-color: var(--local-border);
-}
-.act-row strong {
-  color: var(--text);
-}
-.act-row em {
-  color: var(--local);
-  font-style: normal;
-}
-.act-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--local);
-  box-shadow: 0 0 10px var(--local);
-  flex-shrink: 0;
-}
-.act-dot.revert,
-.act-dot.clear {
-  background: var(--remote);
-  box-shadow: 0 0 10px var(--remote);
-}
-.when {
-  margin-left: auto;
-  font-size: 12px;
-  white-space: nowrap;
 }
 
 .pop-enter-active,

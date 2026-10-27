@@ -1,8 +1,3 @@
-/**
- * Thin client for https://rickandmortyapi.com
- * - In-memory promise cache (dedupes concurrent requests and avoids refetching)
- * - 404 is treated as "no results" (the API returns 404 for empty filters)
- */
 const BASE = 'https://rickandmortyapi.com/api'
 const cache = new Map()
 
@@ -37,7 +32,6 @@ export function fetchOne(resource, id) {
   return request(`/${resource}/${id}`)
 }
 
-/** Fetches many entities in a single request. Always returns an array. */
 export async function fetchMany(resource, ids) {
   const unique = [...new Set(ids.filter(Boolean))]
   if (!unique.length) return []
@@ -46,7 +40,6 @@ export async function fetchMany(resource, ids) {
   return Array.isArray(data) ? data : [data]
 }
 
-/** Fetches every page of a resource (used for small collections like episodes). */
 export async function fetchAll(resource, filters = {}) {
   const first = await fetchPage(resource, 1, filters)
   const rest = await Promise.all(

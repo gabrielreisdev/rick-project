@@ -1,13 +1,12 @@
 import { ref, watch } from 'vue'
 
-/** A ref persisted in localStorage and synced across browser tabs. */
 export function usePersistedRef(key, fallback) {
   let initial = fallback
   try {
     const raw = localStorage.getItem(key)
     if (raw) initial = JSON.parse(raw)
-  } catch {
-    /* corrupted storage – fall back */
+  } catch (e) {
+    void e
   }
 
   const state = ref(initial)
@@ -17,8 +16,8 @@ export function usePersistedRef(key, fallback) {
     (value) => {
       try {
         localStorage.setItem(key, JSON.stringify(value))
-      } catch {
-        /* quota exceeded / private mode */
+      } catch (e) {
+        void e
       }
     },
     { deep: true },
@@ -29,8 +28,8 @@ export function usePersistedRef(key, fallback) {
       if (e.key !== key) return
       try {
         state.value = e.newValue ? JSON.parse(e.newValue) : fallback
-      } catch {
-        /* ignore */
+      } catch (err) {
+        void err
       }
     })
   }

@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import CharacterCard from '@/components/cards/CharacterCard.vue'
+import CharacterCard from './CharacterCard.vue'
 import CastBreakdown from './CastBreakdown.vue'
-import SkeletonGrid from '@/components/ui/SkeletonGrid.vue'
-import EmptyState from '@/components/ui/EmptyState.vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import SkeletonGrid from './SkeletonGrid.vue'
+import EmptyState from './EmptyState.vue'
+import AppIcon from './AppIcon.vue'
 import { fetchMany, idFromUrl } from '@/api/rickmorty'
 import { useEditsStore } from '@/stores/edits'
 

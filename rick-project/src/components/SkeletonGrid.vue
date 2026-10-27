@@ -12,7 +12,6 @@ defineProps({
       :key="n"
       class="rounded-3xl border border-white/10 bg-surface overflow-hidden backdrop-blur-md"
     >
-      <!-- .skeleton usa animação pura em animations.css; dimensões usam Tailwind -->
       <div
         class="skeleton rounded-none"
         :class="variant === 'location' || variant === 'episode' ? 'aspect-[16/8]' : 'aspect-square'"

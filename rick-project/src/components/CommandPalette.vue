@@ -1,9 +1,9 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import SourceBadge from '@/components/ui/SourceBadge.vue'
-import SafeImage from '@/components/ui/SafeImage.vue'
+import AppIcon from './AppIcon.vue'
+import SourceBadge from './SourceBadge.vue'
+import SafeImage from './SafeImage.vue'
 import { fetchPage } from '@/api/rickmorty'
 import { RESOURCES, t } from '@/config/resources'
 import { formatDate } from '@/utils/format'
@@ -55,10 +55,6 @@ watch(query, (q) => {
   }, 280)
 })
 
-/**
- * Merge remote results with local edits, plus local-only matches (items whose
- * *edited* name matches the query but the remote name doesn't).
- */
 const groups = computed(() => {
   const q = query.value.trim().toLowerCase()
   if (!q) return []

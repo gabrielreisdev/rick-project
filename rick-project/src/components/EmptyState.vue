@@ -20,7 +20,6 @@ defineProps({
 </template>
 
 <style scoped>
-/* CSS puro reservado exclusivamente para a animação do portal giratório */
 .portal-aura::before {
   content: '';
   position: absolute;

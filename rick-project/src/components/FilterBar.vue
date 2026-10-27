@@ -1,6 +1,6 @@
 <script setup>
 import { computed, reactive, watch } from 'vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import AppIcon from './AppIcon.vue'
 import { RESOURCES, t } from '@/config/resources'
 
 const props = defineProps({

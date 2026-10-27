@@ -1,15 +1,15 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import SourceBadge from '@/components/ui/SourceBadge.vue'
-import StatusDot from '@/components/ui/StatusDot.vue'
-import FavButton from '@/components/ui/FavButton.vue'
-import SafeImage from '@/components/ui/SafeImage.vue'
-import EmptyState from '@/components/ui/EmptyState.vue'
+import AppIcon from '@/components/AppIcon.vue'
+import SourceBadge from '@/components/SourceBadge.vue'
+import StatusDot from '@/components/StatusDot.vue'
+import FavButton from '@/components/FavButton.vue'
+import SafeImage from '@/components/SafeImage.vue'
+import EmptyState from '@/components/EmptyState.vue'
 import EditableField from '@/components/EditableField.vue'
-import CharacterRelations from '@/components/detail/CharacterRelations.vue'
-import CastSection from '@/components/detail/CastSection.vue'
+import CharacterRelations from '@/components/CharacterRelations.vue'
+import CastSection from '@/components/CastSection.vue'
 import { fetchCount, fetchOne } from '@/api/rickmorty'
 import { RESOURCES, SEASON_COLORS, parseEpisodeCode, t } from '@/config/resources'
 import { useEditsStore } from '@/stores/edits'
@@ -45,7 +45,6 @@ async function load() {
 watch(() => [props.resource, props.id], load, { immediate: true })
 fetchCount(props.resource).then((n) => (total.value = n)).catch(() => {})
 
-/** What the user sees: remote data merged with local edits. */
 const item = computed(() => edits.apply(props.resource, raw.value))
 const record = computed(() => edits.get(props.resource, props.id))
 const isLocal = computed(() => item.value?._source === 'local')
@@ -145,7 +144,6 @@ const remoteMeta = computed(() => {
     </EmptyState>
 
     <template v-else>
-      <!-- HERO -->
       <header class="hero" :class="[resource, { 'is-local': isLocal }]" :style="{ '--season': seasonColor }">
         <div class="hero-media">
           <template v-if="resource === 'character'">
@@ -209,9 +207,8 @@ const remoteMeta = computed(() => {
         </div>
       </header>
 
-      <!-- EDIT + META -->
-      <div class="content">
-        <section class="panel edit-panel">
+      <div class="content" :class="{ 'read-only': !schema.editable }">
+        <section v-if="schema.editable" class="panel edit-panel">
           <div class="panel-head">
             <div>
               <h2><AppIcon name="pencil" :size="18" /> Dados editáveis</h2>
@@ -252,7 +249,6 @@ const remoteMeta = computed(() => {
         </aside>
       </div>
 
-      <!-- RELATIONS -->
       <CharacterRelations v-if="resource === 'character'" :character="raw" />
       <CastSection
         v-else-if="resource === 'location'"
@@ -282,7 +278,6 @@ const remoteMeta = computed(() => {
   font-size: 13px;
 }
 
-/* hero */
 .hero {
   position: relative;
   display: grid;
@@ -466,13 +461,23 @@ h1 {
   font-size: 13px;
 }
 
-/* content */
 .content {
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: 20px;
   margin-top: 20px;
   align-items: start;
+}
+.content.read-only {
+  grid-template-columns: 1fr;
+}
+.content.read-only .meta-panel {
+  position: static;
+}
+.content.read-only .meta-panel dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
 }
 .panel h2 {
   display: flex;

@@ -1,16 +1,19 @@
 <script setup>
 import { computed } from 'vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import AppIcon from './AppIcon.vue'
 import { useEditsStore } from '@/stores/edits'
+import { useFavoritesStore } from '@/stores/favorites'
 
 const emit = defineEmits(['open-search'])
 const edits = useEditsStore()
+const favorites = useFavoritesStore()
 
 const links = computed(() => [
   { to: '/', label: 'Início', icon: 'home', exact: true },
   { to: '/characters', label: 'Personagens', icon: 'users', badge: edits.countBy.character, local: true },
-  { to: '/locations', label: 'Locais', icon: 'globe', badge: edits.countBy.location, local: true },
-  { to: '/episodes', label: 'Episódios', icon: 'tv', badge: edits.countBy.episode, local: true },
+  { to: '/locations', label: 'Locais', icon: 'globe' },
+  { to: '/episodes', label: 'Episódios', icon: 'tv' },
+  { to: '/favorites', label: 'Favoritos', icon: 'heart', badge: favorites.count, fav: true },
 ])
 </script>
 
@@ -21,7 +24,6 @@ const links = computed(() => [
            min-[901px]:inset-y-0 min-[901px]:left-0 min-[901px]:w-[248px] min-[901px]:p-5 min-[901px]:flex-col min-[901px]:border-r
            flex gap-5"
   >
-    <!-- Brand / Logo (desktop only) -->
     <RouterLink to="/" class="hidden min-[901px]:flex items-center gap-3 px-2 py-1" aria-label="Portal Explorer — início">
       <span class="brand-portal" />
       <span class="flex flex-col leading-none">
@@ -34,7 +36,6 @@ const links = computed(() => [
       </span>
     </RouterLink>
 
-    <!-- Search trigger -->
     <button
       id="open-search"
       type="button"
@@ -48,7 +49,6 @@ const links = computed(() => [
       <kbd class="hidden min-[901px]:inline">Ctrl K</kbd>
     </button>
 
-    <!-- Navigation links -->
     <nav class="flex max-[900px]:flex-1 max-[900px]:flex-row max-[900px]:justify-around min-[901px]:flex-col gap-1">
       <template v-for="(l, i) in links" :key="i">
         <hr v-if="l.divider" class="hidden min-[901px]:block border-0 border-t border-white/10 my-2.5 mx-2" />
@@ -64,12 +64,20 @@ const links = computed(() => [
         >
           <AppIcon :name="l.icon" :size="18" />
           <span class="max-[520px]:hidden min-[901px]:flex-1">{{ l.label }}</span>
-          <span
-            v-if="l.badge"
-            class="grid place-items-center rounded-full font-mono text-[11px] px-1.5 h-5 min-w-[22px]
+          <RouterLink
+            v-if="l.badge && l.local"
+            :to="`${l.to}?edited=true`"
+            class="grid place-items-center rounded-full font-mono text-[11px] px-1.5 h-5 min-w-[22px] transition-transform hover:scale-115 cursor-pointer bg-local-bg text-local hover:bg-local hover:text-[#05080d]
                    max-[900px]:absolute max-[900px]:top-0 max-[900px]:right-0 max-[900px]:text-[9px] max-[900px]:h-4 max-[900px]:min-w-[16px]"
-            :class="l.local ? 'bg-local-bg text-local' : 'bg-[#ff6fb5]/15 text-[#ff8cc6]'"
-            :title="l.local ? 'Edições locais' : ''"
+            title="Clique para ver apenas as edições locais"
+            @click.stop
+          >
+            {{ l.badge }}
+          </RouterLink>
+          <span
+            v-else-if="l.badge"
+            class="grid place-items-center rounded-full font-mono text-[11px] px-1.5 h-5 min-w-[22px] bg-[#ff6fb5]/15 text-[#ff8cc6]
+                   max-[900px]:absolute max-[900px]:top-0 max-[900px]:right-0 max-[900px]:text-[9px] max-[900px]:h-4 max-[900px]:min-w-[16px]"
           >
             {{ l.badge }}
           </span>
@@ -80,7 +88,6 @@ const links = computed(() => [
 </template>
 
 <style scoped>
-/* CSS puro dedicado exclusivamente à animação de rotação do portal e barra ativa */
 .brand-portal {
   position: relative;
   width: 40px;

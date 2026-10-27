@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import AppIcon from './AppIcon.vue'
 
 const props = defineProps({
   page: { type: Number, required: true },

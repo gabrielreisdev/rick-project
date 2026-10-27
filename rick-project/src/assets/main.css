@@ -1,13 +1,6 @@
-/* ============================================================
-   Portal Explorer — Tailwind CSS v4 + Design System Setup
-   (Tailwind para utilitários/layout; CSS puro para animações)
-   ============================================================ */
 @import "tailwindcss";
 @import "./animations.css";
 
-/* ------------------------------------------------------------
-   Tailwind CSS v4 Theme configuration
-   ------------------------------------------------------------ */
 @theme {
   --color-portal: #97ce4c;
   --color-portal-glow: #b8ff5c;
@@ -47,9 +40,6 @@
   --radius-lg: 24px;
 }
 
-/* ------------------------------------------------------------
-   CSS Custom Properties (Retrocompatibilidade e tokens dinâmicos)
-   ------------------------------------------------------------ */
 :root {
   --bg: #05080d;
   --bg-2: #0a1119;
@@ -94,9 +84,6 @@
   color-scheme: dark;
 }
 
-/* ------------------------------------------------------------
-   Base Styles & Starfield Canvas
-   ------------------------------------------------------------ */
 html {
   scroll-behavior: smooth;
 }
@@ -117,7 +104,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Starfield decorativo com animação pura de drift */
 body::before {
   content: '';
   position: fixed;
@@ -189,9 +175,6 @@ p {
   border-radius: 6px;
 }
 
-/* ------------------------------------------------------------
-   UI Component Classes (Reutilizáveis com Tailwind)
-   ------------------------------------------------------------ */
 .glass {
   background: var(--surface);
   border: 1px solid var(--border-2);
@@ -208,7 +191,6 @@ p {
   padding: 24px;
 }
 
-/* Botões */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -288,7 +270,6 @@ p {
   width: 32px;
 }
 
-/* Campos de entrada */
 .input,
 .select,
 .textarea {
@@ -347,7 +328,6 @@ p {
   color: var(--text-mute);
 }
 
-/* Chips & Badges */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -396,7 +376,6 @@ p {
   text-shadow: 0 0 18px rgba(215, 123, 255, 0.45);
 }
 
-/* Layout helpers */
 .container {
   width: 100%;
   max-width: 1360px;
@@ -449,7 +428,6 @@ p {
   color: var(--text-mute);
 }
 
-/* Card base — layout & visual em harmonia com Tailwind; animação de entrada pura */
 .card {
   position: relative;
   display: flex;
@@ -481,7 +459,6 @@ p {
     0 18px 50px -12px rgba(215, 123, 255, 0.3);
 }
 
-/* Skeleton com animação shimmer pura */
 .skeleton {
   background: linear-gradient(
     100deg,

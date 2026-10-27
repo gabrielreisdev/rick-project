@@ -1,10 +1,10 @@
 <script setup>
 import { computed } from 'vue'
-import SourceBadge from '@/components/ui/SourceBadge.vue'
-import StatusDot from '@/components/ui/StatusDot.vue'
-import FavButton from '@/components/ui/FavButton.vue'
-import SafeImage from '@/components/ui/SafeImage.vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import SourceBadge from './SourceBadge.vue'
+import StatusDot from './StatusDot.vue'
+import FavButton from './FavButton.vue'
+import SafeImage from './SafeImage.vue'
+import AppIcon from './AppIcon.vue'
 import { t } from '@/config/resources'
 
 const props = defineProps({
@@ -23,7 +23,6 @@ const isLocal = computed(() => props.item._source === 'local')
     :class="{ 'is-local': isLocal }"
     :style="{ '--i': index }"
   >
-    <!-- Media / Imagem com overlay e hover zoom via Tailwind -->
     <div class="relative aspect-square overflow-hidden bg-bg-subtle">
       <SafeImage
         :src="item.image"
@@ -41,7 +40,6 @@ const isLocal = computed(() => props.item._source === 'local')
       </span>
     </div>
 
-    <!-- Conteúdo com Tailwind para tipografia, flex e grid -->
     <div class="pt-2 px-4.5 pb-4.5 flex flex-col gap-2.5 flex-1">
       <h3 class="text-lg font-bold leading-tight" :class="edited('name')">{{ item.name }}</h3>
       <p class="flex items-center flex-wrap gap-1.5 text-[13.5px] text-text-dim">

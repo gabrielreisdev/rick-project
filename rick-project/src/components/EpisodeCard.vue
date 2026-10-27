@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue'
-import SourceBadge from '@/components/ui/SourceBadge.vue'
-import FavButton from '@/components/ui/FavButton.vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import SourceBadge from './SourceBadge.vue'
+import FavButton from './FavButton.vue'
+import AppIcon from './AppIcon.vue'
 import { parseEpisodeCode, SEASON_COLORS } from '@/config/resources'
 import { characterAvatar, idFromUrl } from '@/api/rickmorty'
 import { formatDate } from '@/utils/format'

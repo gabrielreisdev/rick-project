@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import AppIcon from './AppIcon.vue'
 import { t } from '@/config/resources'
 
 const props = defineProps({

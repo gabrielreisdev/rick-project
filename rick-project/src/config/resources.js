@@ -1,20 +1,13 @@
-/**
- * Schema for each API resource. Drives list filters, editable fields and labels,
- * so views/components stay generic.
- */
 export const LABELS = {
-  // Status
   Alive: 'Vivo',
   Dead: 'Morto',
   unknown: 'Desconhecido',
   Unknown: 'Desconhecido',
 
-  // Gênero
   Female: 'Feminino',
   Male: 'Masculino',
   Genderless: 'Sem gênero',
 
-  // Espécies
   Human: 'Humano',
   Alien: 'Alienígena',
   Humanoid: 'Humanoide',
@@ -25,7 +18,6 @@ export const LABELS = {
   Cronenberg: 'Cronenberg',
   Disease: 'Doença',
 
-  // Tipos de locais
   Planet: 'Planeta',
   'Space station': 'Estação Espacial',
   Microverse: 'Microverso',
@@ -58,7 +50,6 @@ export const LABELS = {
   Consciousness: 'Consciência',
   Memory: 'Memória',
 
-  // Dimensões
   'Replacement Dimension': 'Dimensão de Substituição',
   'Cronenberg Dimension': 'Dimensão Cronenberg',
   'Fantasy Dimension': 'Dimensão Fantástica',
@@ -101,6 +92,7 @@ export const RESOURCES = {
     singular: 'Personagem',
     icon: 'users',
     tagline: 'Cada Rick, cada Morty, cada criatura bizarra catalogada no multiverso.',
+    editable: true,
     fields: [
       { key: 'name', label: 'Nome', type: 'text' },
       { key: 'status', label: 'Status', type: 'select', options: STATUS },
@@ -125,12 +117,7 @@ export const RESOURCES = {
     singular: 'Local',
     icon: 'globe',
     tagline: 'Planetas, microversos, estações espaciais e dimensões inteiras.',
-    fields: [
-      { key: 'name', label: 'Nome', type: 'text' },
-      { key: 'type', label: 'Tipo', type: 'text' },
-      { key: 'dimension', label: 'Dimensão', type: 'text' },
-      { key: 'notes', label: 'Anotações', type: 'textarea', localOnly: true, placeholder: 'Suas notas de campo…' },
-    ],
+    editable: false,
     filters: [
       { key: 'name', label: 'Buscar por nome', type: 'search' },
       { key: 'type', label: 'Tipo', type: 'text', placeholder: 'Planeta, Aglomerado…' },
@@ -144,12 +131,7 @@ export const RESOURCES = {
     singular: 'Episódio',
     icon: 'tv',
     tagline: 'Todas as aventuras, temporada por temporada.',
-    fields: [
-      { key: 'name', label: 'Título', type: 'text' },
-      { key: 'episode', label: 'Código', type: 'text', placeholder: 'S01E01' },
-      { key: 'air_date', label: 'Data de exibição', type: 'text' },
-      { key: 'notes', label: 'Anotações', type: 'textarea', localOnly: true, placeholder: 'Suas notas de campo…' },
-    ],
+    editable: false,
     filters: [
       { key: 'name', label: 'Buscar por título', type: 'search' },
       { key: 'episode', label: 'Temporada', type: 'chips', options: SEASONS },
@@ -192,7 +174,6 @@ export function parseEpisodeCode(code = '') {
   return m ? { season: Number(m[1]), number: Number(m[2]) } : { season: 0, number: 0 }
 }
 
-/** Deterministic gradient for entities without images (locations / episodes). */
 export function artFor(seed, hueShift = 0) {
   const h = (Number(seed) * 47 + hueShift) % 360
   return `radial-gradient(circle at 30% 20%, hsl(${h} 90% 60% / .55), transparent 55%),

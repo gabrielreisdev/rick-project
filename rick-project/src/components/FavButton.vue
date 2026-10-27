@@ -45,7 +45,6 @@ function toggle(e) {
 </template>
 
 <style scoped>
-/* CSS puro reservado exclusivamente para a micro-animação pop do ícone */
 .active :deep(svg) {
   fill: currentColor;
   animation: heart-pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);

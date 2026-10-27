@@ -29,15 +29,7 @@ const router = createRouter({
       name: 'favorites',
       component: () => import('@/views/FavoritesView.vue'),
       meta: { title: 'Favoritos' },
-      },
-      /* Temporariamente comentados:
-      {
-      path: '/lab',
-      name: 'lab',
-      component: () => import('@/views/LabView.vue'),
-      meta: { title: 'Laboratório' },
     },
-    */
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',

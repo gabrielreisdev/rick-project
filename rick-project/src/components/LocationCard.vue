@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import SourceBadge from '@/components/ui/SourceBadge.vue'
-import FavButton from '@/components/ui/FavButton.vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import SourceBadge from './SourceBadge.vue'
+import FavButton from './FavButton.vue'
+import AppIcon from './AppIcon.vue'
 import { t } from '@/config/resources'
 import { characterAvatar, idFromUrl } from '@/api/rickmorty'
 
@@ -40,7 +40,6 @@ function openPortal(e) {
     <div class="portal-viewport">
       <div class="radar-grid" />
       
-      <!-- Dormant / Active Portal Ring -->
       <div class="portal-core">
         <span class="portal-ring-outer" />
         <span class="portal-ring-mid" />
@@ -50,7 +49,6 @@ function openPortal(e) {
         </div>
       </div>
 
-      <!-- Explosive Dimensional Portal Opening Animation on click -->
       <div v-if="isOpening" class="portal-burst">
         <span class="burst-flash" />
         <span class="burst-swirl swirl-1" />
@@ -98,55 +96,54 @@ function openPortal(e) {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(151, 206, 76, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(151, 206, 76, 0.05) 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: center center;
-  opacity: 0.7;
-  pointer-events: none;
+    linear-gradient(to right, rgba(151, 206, 76, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(151, 206, 76, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  mask-image: radial-gradient(circle at 50% 50%, black 40%, transparent 80%);
 }
 
 .portal-core {
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 90px;
+  height: 90px;
   display: grid;
   place-items: center;
-  transition: transform 0.4s var(--ease);
-}
-
-.loc-card:hover .portal-core {
-  transform: scale(1.14);
 }
 
 .portal-ring-outer {
   position: absolute;
-  inset: 0;
+  inset: -10px;
   border-radius: 50%;
-  border: 1.5px dashed rgba(151, 206, 76, 0.35);
-  animation: spin 14s linear infinite;
+  border: 2px dashed rgba(151, 206, 76, 0.35);
+  animation: portal-spin 14s linear infinite;
+  transition: all 0.4s var(--ease);
 }
 
 .loc-card:hover .portal-ring-outer {
-  border-color: rgba(184, 255, 92, 0.75);
+  border-color: rgba(184, 255, 92, 0.7);
   animation-duration: 6s;
+  box-shadow: 0 0 20px rgba(151, 206, 76, 0.3);
 }
 
 .portal-ring-mid {
   position: absolute;
-  inset: 7px;
+  inset: 0;
   border-radius: 50%;
-  border: 1px solid rgba(151, 206, 76, 0.2);
-  animation: spin-reverse 9s linear infinite;
+  border: 1px solid rgba(184, 255, 92, 0.5);
+  box-shadow: inset 0 0 14px rgba(151, 206, 76, 0.4);
+  animation: portal-spin-reverse 9s linear infinite;
 }
 
 .portal-energy {
   position: absolute;
-  inset: 12px;
+  inset: 6px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(184, 255, 92, 0.25), transparent 70%);
-  filter: blur(4px);
-  animation: pulse-energy 2.4s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(184, 255, 92, 0.4) 0%, rgba(151, 206, 76, 0.15) 50%, transparent 70%);
+  animation: portal-energy-pulse 2.4s ease-in-out infinite;
+}
+
+.loc-card:hover .portal-energy {
+  background: radial-gradient(circle, rgba(200, 255, 120, 0.7) 0%, rgba(151, 206, 76, 0.35) 60%, transparent 75%);
 }
 
 .portal-center-icon {
@@ -169,7 +166,6 @@ function openPortal(e) {
   box-shadow: 0 0 24px rgba(184, 255, 92, 0.7);
 }
 
-/* Dimensional Portal Burst Animation on click */
 .portal-burst {
   position: absolute;
   inset: 0;
@@ -200,26 +196,17 @@ function openPortal(e) {
 }
 
 .burst-swirl.swirl-2 {
-  animation: swirl-expand-rev 0.48s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
-  opacity: 0.8;
-  mix-blend-mode: screen;
+  animation: swirl-expand-alt 0.48s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
 }
 
 .burst-ring {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  border: 4px solid var(--portal-glow);
-  box-shadow: 0 0 30px var(--portal-glow);
-  animation: ring-shockwave 0.48s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
-}
-
-.loc-card.opening-portal {
-  transform: scale(0.98);
-  box-shadow: 0 0 50px rgba(151, 206, 76, 0.8);
-  border-color: var(--portal-glow);
-  transition: all 0.2s ease-out;
+  border: 4px solid #f2ffd9;
+  box-shadow: 0 0 30px #b8ff5c, 0 0 60px #97ce4c;
+  animation: shockwave 0.48s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 }
 
 @keyframes flash-expand {
@@ -229,74 +216,66 @@ function openPortal(e) {
   }
   30% {
     opacity: 1;
-    transform: scale(1.2);
+    transform: scale(1.4);
   }
   100% {
-    opacity: 0.95;
-    transform: scale(3.5);
+    opacity: 0.9;
+    transform: scale(2.5);
   }
 }
 
 @keyframes swirl-expand {
   0% {
+    opacity: 0.3;
+    transform: scale(0.3) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(3.5) rotate(540deg);
+  }
+}
+
+@keyframes swirl-expand-alt {
+  0% {
+    opacity: 0.3;
     transform: scale(0.2) rotate(0deg);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
   }
   100% {
-    transform: scale(3) rotate(420deg);
-    opacity: 1;
-  }
-}
-
-@keyframes swirl-expand-rev {
-  0% {
-    transform: scale(0.1) rotate(0deg);
-    opacity: 0;
-  }
-  30% {
     opacity: 0.9;
-  }
-  100% {
-    transform: scale(2.6) rotate(-360deg);
-    opacity: 0.8;
+    transform: scale(3.2) rotate(-540deg);
   }
 }
 
-@keyframes ring-shockwave {
+@keyframes shockwave {
   0% {
-    transform: scale(0.5);
+    transform: scale(1);
     opacity: 1;
-    border-width: 6px;
   }
   100% {
-    transform: scale(6);
+    transform: scale(28);
     opacity: 0;
-    border-width: 1px;
   }
 }
 
-@keyframes spin {
+@keyframes portal-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes spin-reverse {
+@keyframes portal-spin-reverse {
   to {
     transform: rotate(-360deg);
   }
 }
 
-@keyframes pulse-energy {
+@keyframes portal-energy-pulse {
   0%, 100% {
-    transform: scale(0.9);
+    transform: scale(0.95);
     opacity: 0.5;
   }
   50% {
-    transform: scale(1.15);
+    transform: scale(1.1);
     opacity: 0.9;
   }
 }
@@ -308,11 +287,12 @@ function openPortal(e) {
   right: 12px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   z-index: 5;
 }
 
 .body {
-  padding: 16px 18px 18px;
+  padding: 14px 18px 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -322,13 +302,14 @@ function openPortal(e) {
 .type {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--portal);
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
 }
 
 .name {
   font-size: 17px;
   font-weight: 700;
+  line-height: 1.25;
 }
 
 .dim {
@@ -345,7 +326,6 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
 }
 
 .avatars {

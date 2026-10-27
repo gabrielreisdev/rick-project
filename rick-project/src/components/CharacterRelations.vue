@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import SourceBadge from '@/components/ui/SourceBadge.vue'
+import AppIcon from './AppIcon.vue'
+import SourceBadge from './SourceBadge.vue'
 import { fetchAll, fetchMany, idFromUrl } from '@/api/rickmorty'
 import { parseEpisodeCode, SEASON_COLORS, t } from '@/config/resources'
 import { useEditsStore } from '@/stores/edits'
@@ -42,14 +42,13 @@ const current = computed(() => place(props.character.location))
 
 const appearsIn = computed(() => new Set((props.character.episode ?? []).map(idFromUrl)))
 
-/** Episodes grouped by season, flagging which ones the character appears in. */
 const seasons = computed(() => {
   const map = new Map()
   for (const raw of allEpisodes.value) {
     const ep = edits.apply('episode', raw)
-    const { season } = parseEpisodeCode(raw.episode)
+    const { season, number } = parseEpisodeCode(raw.episode)
     if (!map.has(season)) map.set(season, [])
-    map.get(season).push({ ...ep, present: appearsIn.value.has(raw.id) })
+    map.get(season).push({ ...ep, num: number, present: appearsIn.value.has(raw.id) })
   }
   return [...map.entries()]
     .sort((a, b) => a[0] - b[0])
@@ -60,6 +59,8 @@ const seasons = computed(() => {
       present: eps.filter((e) => e.present).length,
     }))
 })
+
+const maxEps = computed(() => Math.max(1, ...seasons.value.map((s) => s.eps.length)))
 
 const appearances = computed(() => seasons.value.flatMap((s) => s.eps.filter((e) => e.present).map((e) => ({ ...e, color: s.color }))))
 const coverage = computed(() =>
@@ -119,7 +120,7 @@ const coverage = computed(() =>
     </div>
 
     <div v-if="loading" class="skeleton heat-sk" />
-    <div v-else class="heatmap glass">
+    <div v-else class="heatmap glass" :style="{ '--cols': maxEps }">
       <div v-for="s in seasons" :key="s.season" class="season-row" :style="{ '--c': s.color }">
         <span class="season-label mono">T{{ s.season }}</span>
         <div class="cells">
@@ -127,10 +128,12 @@ const coverage = computed(() =>
             v-for="e in s.eps"
             :key="e.id"
             :to="`/episodes/${e.id}`"
-            class="cell"
+            class="cell mono"
             :class="{ on: e.present }"
             :title="`${e.episode} · ${e.name}${e.present ? '' : ' (ausente)'}`"
-          />
+          >
+            {{ e.num }}
+          </RouterLink>
         </div>
         <span class="season-count mono">{{ s.present }}/{{ s.eps.length }}</span>
       </div>
@@ -267,26 +270,38 @@ const coverage = computed(() =>
   text-align: right;
 }
 .cells {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 6px;
 }
 .cell {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text-mute);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: transform 0.2s var(--ease);
+  transition: transform 0.2s var(--ease), border-color 0.2s;
 }
 .cell.on {
   background: var(--c);
+  color: #05080d;
+  font-weight: 700;
   border-color: transparent;
   box-shadow: 0 0 12px -2px var(--c);
 }
 .cell:hover {
-  transform: scale(1.3);
+  transform: translateY(-2px);
+  border-color: var(--c);
   z-index: 1;
+}
+@media (max-width: 640px) {
+  .cell {
+    height: 24px;
+    font-size: 9px;
+  }
 }
 .ep-list {
   list-style: none;

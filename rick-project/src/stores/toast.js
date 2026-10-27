@@ -9,7 +9,6 @@ export const useToastStore = defineStore('toast', () => {
     toasts.value = toasts.value.filter((t) => t.id !== id)
   }
 
-  /** push({ message, type: 'success'|'local'|'info'|'error', action: { label, run } }) */
   function push({ message, type = 'info', action = null, timeout = 4500 }) {
     const id = ++seq
     toasts.value.push({ id, message, type, action })

@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import EmptyState from '@/components/ui/EmptyState.vue'
-import SourceBadge from '@/components/ui/SourceBadge.vue'
-import SafeImage from '@/components/ui/SafeImage.vue'
+import AppIcon from '@/components/AppIcon.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import SourceBadge from '@/components/SourceBadge.vue'
+import SafeImage from '@/components/SafeImage.vue'
 import { RESOURCES, artFor, locationIcon } from '@/config/resources'
 import { useEditsStore } from '@/stores/edits'
 import { useToastStore } from '@/stores/toast'
@@ -131,41 +131,18 @@ function handleFile(e) {
       </div>
     </header>
 
-    <!-- Filter chips -->
     <div class="filters-row">
-      <div class="chips">
+      <div v-if="edits.count" class="chips">
         <button
           class="chip"
           :class="{ active: currentFilter === 'all' }"
           @click="currentFilter = 'all'"
         >
-          Todas ({{ edits.count }})
-        </button>
-        <button
-          class="chip"
-          :class="{ active: currentFilter === 'character' }"
-          @click="currentFilter = 'character'"
-        >
           Personagens ({{ edits.countBy.character }})
-        </button>
-        <button
-          class="chip"
-          :class="{ active: currentFilter === 'location' }"
-          @click="currentFilter = 'location'"
-        >
-          Locais ({{ edits.countBy.location }})
-        </button>
-        <button
-          class="chip"
-          :class="{ active: currentFilter === 'episode' }"
-          @click="currentFilter = 'episode'"
-        >
-          Episódios ({{ edits.countBy.episode }})
         </button>
       </div>
     </div>
 
-    <!-- Empty state -->
     <EmptyState
       v-if="!filteredList.length"
       icon="🧪"
@@ -177,7 +154,6 @@ function handleFile(e) {
       </RouterLink>
     </EmptyState>
 
-    <!-- Overrides list -->
     <div v-else class="overrides-list">
       <article
         v-for="item in filteredList"
@@ -233,7 +209,6 @@ function handleFile(e) {
           </div>
         </div>
 
-        <!-- Diff list -->
         <div class="diff-table">
           <div class="diff-header">
             <span>Campo</span>
@@ -384,7 +359,6 @@ h1 {
   gap: 8px;
 }
 
-/* Diff table */
 .diff-table {
   background: rgba(0, 0, 0, 0.25);
   border-radius: 12px;

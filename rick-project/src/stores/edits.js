@@ -11,21 +11,16 @@ export const keyOf = (resource, id) => `${resource}:${id}`
 const normalize = (v) => (typeof v === 'string' ? v.trim() : (v ?? ''))
 const clone = (v) => (v == null ? v : JSON.parse(JSON.stringify(v)))
 
-/**
- * Local overrides layered on top of remote API data.
- *
- * Each record stores only the fields that differ from the remote value, plus a
- * snapshot of the original remote values (`base`) so we can show diffs, revert,
- * and render the item even without hitting the API.
- *
- * record = { resource, id, fields, base, image, createdAt, updatedAt }
- */
+const isEditable = (resource) => Boolean(RESOURCES[resource]?.editable)
+
 export const useEditsStore = defineStore('edits', () => {
   const records = usePersistedRef(EDITS_KEY, {})
   const activity = usePersistedRef(ACTIVITY_KEY, [])
 
   const list = computed(() =>
-    Object.values(records.value).sort((a, b) => b.updatedAt - a.updatedAt),
+    Object.values(records.value)
+      .filter((r) => isEditable(r.resource))
+      .sort((a, b) => b.updatedAt - a.updatedAt),
   )
   const count = computed(() => list.value.length)
   const countBy = computed(() => {
@@ -35,10 +30,10 @@ export const useEditsStore = defineStore('edits', () => {
   })
 
   function get(resource, id) {
+    if (!isEditable(resource)) return null
     return records.value[keyOf(resource, id)] ?? null
   }
 
-  /** Returns the entity merged with local edits + source metadata. */
   function apply(resource, entity) {
     if (!entity) return entity
     const rec = get(resource, entity.id)
@@ -63,17 +58,13 @@ export const useEditsStore = defineStore('edits', () => {
   }
 
   function snapshotBase(resource, entity) {
-    const base = {}
+    const base = { ...entity }
     for (const f of RESOURCES[resource].fields) base[f.key] = entity[f.key] ?? ''
     return base
   }
 
-  /**
-   * Updates one or more fields. `entity` must be the raw remote entity.
-   * Values equal to the remote original are dropped (auto-revert).
-   * Returns an undo token `{ key, previous }` or null when nothing changed.
-   */
   function update(resource, entity, values) {
+    if (!isEditable(resource)) return null
     const key = keyOf(resource, entity.id)
     const prev = records.value[key]
     const base = prev?.base ?? snapshotBase(resource, entity)
@@ -137,7 +128,6 @@ export const useEditsStore = defineStore('edits', () => {
     return { key, previous }
   }
 
-  /** Restores a record snapshot (used for undo). */
   function restore(token) {
     if (!token) return
     if (token.previous) records.value[token.key] = token.previous
@@ -173,7 +163,7 @@ export const useEditsStore = defineStore('edits', () => {
     if (!incoming || typeof incoming !== 'object') throw new Error('Arquivo inválido')
     let n = 0
     for (const [key, rec] of Object.entries(incoming)) {
-      if (!rec?.resource || !RESOURCES[rec.resource] || !rec.id || !rec.fields || !rec.base) continue
+      if (!rec?.resource || !isEditable(rec.resource) || !rec.id || !rec.fields || !rec.base) continue
       records.value[key] = rec
       n++
     }
