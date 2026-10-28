@@ -272,24 +272,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
       </div>
     </header>
 
-    <section class="max-[700px]:static sticky top-3 z-20 p-3 rounded-[18px] mb-4 glass shadow-2xl flex flex-col gap-2.5">
+    <section class="max-[700px]:static sticky top-3 z-20 p-3 rounded-[18px] mb-4 glass shadow-2xl">
       <FilterBar :resource="resource" :model-value="filters" @update:model-value="setFilters" />
-      <div v-if="schema.editable && (edits.countBy[resource] > 0 || onlyEdited)" class="flex items-center justify-between pt-2.5 border-t border-white/5 flex-wrap gap-2 text-xs">
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 py-1.5 px-3.5 rounded-full border cursor-pointer transition-all duration-200"
-          :class="onlyEdited
-            ? 'bg-local text-[#05080d] font-semibold border-local shadow-[0_0_18px_rgba(215,123,255,0.45)]'
-            : 'bg-local-bg text-local border-local-border hover:border-local hover:bg-local/20'"
-          @click="toggleOnlyEdited"
-        >
-          <SourceBadge source="local" compact />
-          <span>{{ onlyEdited ? 'Exibindo apenas editados (clique para voltar)' : `Ver apenas editados (${edits.countBy[resource]})` }}</span>
-        </button>
-        <span v-if="onlyEdited" class="text-text-dim">
-          {{ items.length }} de {{ edits.countBy[resource] }} {{ schema.singular.toLowerCase() }}{{ edits.countBy[resource] === 1 ? '' : 's' }}
-        </span>
-      </div>
     </section>
 
     <div v-if="schema.editable && onlyEdited" class="flex items-center justify-between gap-3 p-3.5 mb-5 rounded-2xl border border-local-border bg-local-bg">
