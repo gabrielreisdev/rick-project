@@ -37,13 +37,26 @@ async function load() {
   try {
     raw.value = await fetchOne(props.resource, props.id)
   } catch (e) {
-    error.value = e.message
+    const fallback = edits.get(props.resource, props.id)?.base
+    if (fallback) {
+      raw.value = fallback
+    } else {
+      error.value = e.message
+    }
   } finally {
     loading.value = false
   }
 }
-watch(() => [props.resource, props.id], load, { immediate: true })
-fetchCount(props.resource).then((n) => (total.value = n)).catch(() => {})
+watch(
+  () => [props.resource, props.id],
+  () => {
+    load()
+    fetchCount(props.resource)
+      .then((n) => (total.value = n))
+      .catch(() => {})
+  },
+  { immediate: true },
+)
 
 const item = computed(() => edits.apply(props.resource, raw.value))
 const record = computed(() => edits.get(props.resource, props.id))
