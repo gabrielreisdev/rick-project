@@ -29,7 +29,7 @@ function toggle(e) {
 <template>
   <button
     type="button"
-    class="grid place-items-center rounded-full border backdrop-blur-md cursor-pointer transition-all duration-250 active:scale-95 hover:scale-105 hover:text-[#ff6fb5] hover:border-[#ff6fb5]/50"
+    class="fav grid place-items-center rounded-full border backdrop-blur-md cursor-pointer transition-all duration-250 active:scale-95 hover:scale-105 hover:text-[#ff6fb5] hover:border-[#ff6fb5]/50"
     :class="[
       size === 'lg' ? 'w-11 h-11' : 'w-8 h-8',
       active

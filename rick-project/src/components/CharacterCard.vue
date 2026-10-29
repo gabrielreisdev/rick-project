@@ -33,7 +33,7 @@ const isLocal = computed(() => props.item._source === 'local')
       <div class="absolute inset-0 bg-gradient-to-t from-[#0a1018]/95 via-transparent to-transparent pointer-events-none" />
       <div class="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
         <SourceBadge :source="item._source" :updated-at="item._updatedAt" />
-        <FavButton resource="character" :id="item.id" :name="item.name" />
+        <FavButton resource="character" :id="item.id" :name="item.name" class="ml-auto" />
       </div>
       <span class="absolute bottom-2.5 right-3.5 z-10 text-xs text-white/55 font-mono">
         #{{ String(item.id).padStart(3, '0') }}

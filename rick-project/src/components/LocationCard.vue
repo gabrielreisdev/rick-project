@@ -58,7 +58,7 @@ function openPortal(e) {
 
       <div class="art-top">
         <SourceBadge :source="item._source" :updated-at="item._updatedAt" />
-        <FavButton resource="location" :id="item.id" :name="item.name" />
+        <FavButton resource="location" :id="item.id" :name="item.name" class="ml-auto" />
       </div>
     </div>
 
