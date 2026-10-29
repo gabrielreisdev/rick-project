@@ -1,5 +1,4 @@
-const REMOTE_BASE = 'https://rickandmortyapi.com/api'
-const GQL_ENDPOINTS = ['/rm-gql', 'https://rickandmortyapi.com/graphql']
+const BASE_URL = 'https://rickandmortyapi.com/api'
 const cache = new Map()
 const allCache = new Map()
 const entityCache = {
@@ -59,153 +58,6 @@ async function fetchWithRetry(url, options = {}, retries = 2, timeoutMs = 10000)
   throw lastError
 }
 
-const GQL_FIELDS = {
-  character: `id name status species type gender image created origin { id name } location { id name } episode { id }`,
-  location: `id name type dimension created residents { id }`,
-  episode: `id name air_date episode created characters { id }`,
-}
-
-function normalizeGqlEntity(resource, item) {
-  if (!item || !item.id) return null
-  const id = Number(item.id)
-  if (resource === 'character') {
-    return {
-      id,
-      name: item.name ?? '',
-      status: item.status ?? 'unknown',
-      species: item.species ?? '',
-      type: item.type ?? '',
-      gender: item.gender ?? 'unknown',
-      origin: {
-        name: item.origin?.name ?? 'unknown',
-        url: item.origin?.id ? `${REMOTE_BASE}/location/${item.origin.id}` : '',
-      },
-      location: {
-        name: item.location?.name ?? 'unknown',
-        url: item.location?.id ? `${REMOTE_BASE}/location/${item.location.id}` : '',
-      },
-      image: item.image || `${REMOTE_BASE}/character/avatar/${id}.jpeg`,
-      episode: Array.isArray(item.episode)
-        ? item.episode.map((e) => (typeof e === 'string' ? e : `${REMOTE_BASE}/episode/${e.id}`))
-        : [],
-      url: `${REMOTE_BASE}/character/${id}`,
-      created: item.created ?? '',
-    }
-  }
-  if (resource === 'location') {
-    return {
-      id,
-      name: item.name ?? '',
-      type: item.type ?? '',
-      dimension: item.dimension ?? '',
-      residents: Array.isArray(item.residents)
-        ? item.residents.map((c) => (typeof c === 'string' ? c : `${REMOTE_BASE}/character/${c.id}`))
-        : [],
-      url: `${REMOTE_BASE}/location/${id}`,
-      created: item.created ?? '',
-    }
-  }
-  if (resource === 'episode') {
-    return {
-      id,
-      name: item.name ?? '',
-      air_date: item.air_date ?? '',
-      episode: item.episode ?? '',
-      characters: Array.isArray(item.characters)
-        ? item.characters.map((c) => (typeof c === 'string' ? c : `${REMOTE_BASE}/character/${c.id}`))
-        : [],
-      url: `${REMOTE_BASE}/episode/${id}`,
-      created: item.created ?? '',
-    }
-  }
-  return null
-}
-
-async function queryGraphQL(query, variables = {}) {
-  let lastErr
-  for (const endpoint of GQL_ENDPOINTS) {
-    try {
-      const res = await fetchWithRetry(
-        endpoint,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ query, variables }),
-        },
-        1,
-        10000,
-      )
-      const contentType = res.headers.get('content-type') || ''
-      if (!res.ok || !contentType.includes('application/json')) continue
-      const json = await res.json()
-      if (json?.data) return json.data
-    } catch (err) {
-      lastErr = err
-    }
-  }
-  throw lastErr || new Error('GraphQL fallback failed')
-}
-
-async function fallbackGraphQL(path) {
-  const [pathname, search = ''] = path.split('?')
-  const parts = pathname.split('/').filter(Boolean)
-  const resource = parts[0]
-  const idPart = parts[1]
-  const fields = GQL_FIELDS[resource]
-  if (!fields) throw new Error(`Recurso desconhecido: ${resource}`)
-
-  if (!idPart) {
-    const params = new URLSearchParams(search)
-    const page = Number(params.get('page')) || 1
-    const filter = {}
-    for (const [k, v] of params.entries()) {
-      if (k !== 'page' && v) filter[k] = v
-    }
-    const plural = `${resource}s`
-    const query = `query ($page: Int, $filter: Filter${resource[0].toUpperCase() + resource.slice(1)}) {
-      ${plural}(page: $page, filter: $filter) {
-        info { count pages next prev }
-        results { ${fields} }
-      }
-    }`
-    const data = await queryGraphQL(query, { page, filter })
-    const res = data?.[plural]
-    if (!res || !res.info || res.info.count == null) return null
-    const results = (res.results || []).map((item) => normalizeGqlEntity(resource, item)).filter(Boolean)
-    storeEntities(resource, results)
-    return {
-      info: {
-        count: res.info.count,
-        pages: res.info.pages,
-        next: res.info.next ? `${REMOTE_BASE}/${resource}?page=${res.info.next}` : null,
-        prev: res.info.prev ? `${REMOTE_BASE}/${resource}?page=${res.info.prev}` : null,
-      },
-      results,
-    }
-  }
-
-  if (idPart.includes(',')) {
-    const ids = idPart.split(',').map((x) => x.trim()).filter(Boolean)
-    const queryName = `${resource}sByIds`
-    const query = `query ($ids: [ID!]!) {
-      ${queryName}(ids: $ids) { ${fields} }
-    }`
-    const data = await queryGraphQL(query, { ids })
-    const list = (data?.[queryName] || []).map((item) => normalizeGqlEntity(resource, item)).filter(Boolean)
-    storeEntities(resource, list)
-    return list
-  }
-
-  const query = `query ($id: ID!) {
-    ${resource}(id: $id) { ${fields} }
-  }`
-  const data = await queryGraphQL(query, { id: idPart })
-  if (!data?.[resource]) return null
-  const normalized = normalizeGqlEntity(resource, data[resource])
-  storeEntities(resource, normalized)
-  return normalized
-}
-
 async function request(path) {
   if (cache.has(path)) return cache.get(path)
 
@@ -213,10 +65,10 @@ async function request(path) {
     const isLocation = path.startsWith('/location')
     const proxyPath = isLocation ? path.replace(/^\/location/, '/places') : path
 
-    // Try proxy first (bypasses ad-blockers for /location) then direct remote API
+    // Usa a REST API (https://rickandmortyapi.com/api) diretamente e via proxy local de fallback
     const candidateUrls = [
+      `${BASE_URL}${path}`,
       `/rm-api${proxyPath}`,
-      `${REMOTE_BASE}${path}`,
     ]
 
     let lastError = null
@@ -227,7 +79,7 @@ async function request(path) {
         const contentType = res.headers.get('content-type') || ''
         const isJson = contentType.includes('application/json')
 
-        // 404 from Rick and Morty API means no matches/not found
+        // 404 na REST API do Rick and Morty significa nenhum resultado encontrado
         if (res.status === 404 && isJson) return null
 
         if (res.ok && isJson) {
@@ -246,13 +98,6 @@ async function request(path) {
       } catch (err) {
         lastError = err
       }
-    }
-
-    // Fallback to GraphQL endpoint if REST endpoints failed (e.g. ad-blocker or rate-limit)
-    try {
-      return await fallbackGraphQL(path)
-    } catch (gqlErr) {
-      lastError = lastError || gqlErr
     }
 
     cache.delete(path)
@@ -354,5 +199,5 @@ export function idFromUrl(url) {
 }
 
 export function characterAvatar(id) {
-  return `${REMOTE_BASE}/character/avatar/${id}.jpeg`
+  return `${BASE_URL}/character/avatar/${id}.jpeg`
 }

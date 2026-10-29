@@ -24,15 +24,6 @@ export default defineConfig({
           return stripped.replace(/^\/places/, '/location')
         },
       },
-      '/rm-gql': {
-        target: 'https://rickandmortyapi.com/graphql',
-        changeOrigin: true,
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        },
-        rewrite: () => '',
-      },
     },
   },
   preview: {
@@ -48,15 +39,6 @@ export default defineConfig({
           const stripped = path.replace(/^\/rm-api/, '')
           return stripped.replace(/^\/places/, '/location')
         },
-      },
-      '/rm-gql': {
-        target: 'https://rickandmortyapi.com/graphql',
-        changeOrigin: true,
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        },
-        rewrite: () => '',
       },
     },
   },
