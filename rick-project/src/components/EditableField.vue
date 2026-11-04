@@ -53,7 +53,7 @@ function onKey(e) {
 </script>
 
 <template>
-  <div class="efield" :class="{ edited, editing, wide: field.type === 'textarea' || field.type === 'url' }">
+  <div class="efield" :class="{ edited, editing, wide: field.type === 'textarea' }">
     <div class="label-row">
       <span class="label">{{ field.label }}</span>
       <span v-if="edited" class="state local" title="Valor editado">● editado</span>
