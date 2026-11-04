@@ -102,19 +102,6 @@ function onKey(e) {
 }
 onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
-
-const remoteMeta = computed(() => {
-  if (!raw.value) return []
-  const r = raw.value
-  const rows = [
-    { label: 'ID', value: `#${r.id}` },
-    { label: 'Criado na API', value: formatDate(r.created) },
-  ]
-  if (props.resource === 'character') rows.push({ label: 'Episódios', value: r.episode.length })
-  if (props.resource === 'location') rows.push({ label: 'Residentes', value: r.residents.length })
-  if (props.resource === 'episode') rows.push({ label: 'Elenco', value: r.characters.length })
-  return rows
-})
 </script>
 
 <template>
@@ -220,8 +207,8 @@ const remoteMeta = computed(() => {
         </div>
       </header>
 
-      <div class="content" :class="{ 'read-only': !schema.editable }">
-        <section v-if="schema.editable" class="panel edit-panel">
+      <div v-if="schema.editable" class="content">
+        <section class="panel edit-panel">
           <div class="panel-head">
             <div>
               <h2><AppIcon name="pencil" :size="18" /> Dados editáveis</h2>
@@ -241,25 +228,6 @@ const remoteMeta = computed(() => {
             />
           </div>
         </section>
-
-        <aside class="panel meta-panel">
-          <h2><AppIcon name="cloud" :size="18" /> Informações da API</h2>
-          <dl>
-            <div v-for="m in remoteMeta" :key="m.label">
-              <dt>{{ m.label }}</dt>
-              <dd class="mono">{{ m.value }}</dd>
-            </div>
-          </dl>
-          <a :href="raw.url" target="_blank" rel="noopener" class="btn btn-sm api-link">
-            <AppIcon name="external" :size="14" /> Ver JSON na API
-          </a>
-          <div v-if="isLocal" class="source-explainer local">
-            <SourceBadge source="local" />
-            <p>
-              {{ item._edited.length }} campo(s) editado(s) neste navegador.
-            </p>
-          </div>
-        </aside>
       </div>
 
       <CharacterRelations v-if="resource === 'character'" :character="raw" />
@@ -476,21 +444,10 @@ h1 {
 
 .content {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr;
   gap: 20px;
   margin-top: 20px;
   align-items: start;
-}
-.content.read-only {
-  grid-template-columns: 1fr;
-}
-.content.read-only .meta-panel {
-  position: static;
-}
-.content.read-only .meta-panel dl {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
 }
 .panel h2 {
   display: flex;
@@ -509,54 +466,6 @@ h1 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-}
-.meta-panel {
-  position: sticky;
-  top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.meta-panel dl {
-  margin: 0;
-  display: grid;
-  gap: 10px;
-}
-.meta-panel dl div {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed var(--border-2);
-}
-.meta-panel dt {
-  color: var(--text-mute);
-  font-size: 13px;
-}
-.meta-panel dd {
-  margin: 0;
-  font-size: 13px;
-  color: var(--remote);
-}
-.api-link {
-  align-self: flex-start;
-}
-.source-explainer {
-  display: grid;
-  gap: 8px;
-  padding: 14px;
-  border-radius: 14px;
-  background: var(--remote-bg);
-  border: 1px solid var(--remote-border);
-  font-size: 13px;
-  color: var(--text-dim);
-}
-.source-explainer.local {
-  background: var(--local-bg);
-  border-color: var(--local-border);
-}
-.source-explainer :deep(.source-badge) {
-  justify-self: start;
 }
 
 .hero-sk {
@@ -590,14 +499,6 @@ h1 {
   }
 }
 
-@media (max-width: 1100px) {
-  .content {
-    grid-template-columns: 1fr;
-  }
-  .meta-panel {
-    position: static;
-  }
-}
 @media (max-width: 760px) {
   .hero {
     grid-template-columns: 1fr;
